@@ -4,12 +4,15 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { MaximizeIcon, XIcon } from "@/components/ui/icons";
 
-const TextEditor = () => {
+const TextEditor = ({ selectedFile }: { selectedFile: string | null }) => {
   const [htmlContent, setHtmlContent] = useState<string>("Loading...");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchFileContent = async () => {
+  const fetchFileContent = async (filename: string) => {
+    setLoading(true);
+    setError(null);
     try {
-      const filename = "example.html"; // This should be dynamically set based on user selection
       console.log("Fetching file:", filename);
       const response = await axios.get(`http://localhost:8000/api/fetch/${filename}`, {
         responseType: "text",
@@ -17,15 +20,22 @@ const TextEditor = () => {
 
       console.log("File fetched, setting HTML content");
       setHtmlContent(response.data);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching file:", error);
       setHtmlContent("Error loading content.");
+      setError("Error loading content.");
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchFileContent();
-  }, []);
+    if (selectedFile) {
+      fetchFileContent(selectedFile);
+    } else {
+      setHtmlContent("No file selected.");
+    }
+  }, [selectedFile]);
 
   const handleContentChange = (event: React.FormEvent<HTMLDivElement>) => {
     setHtmlContent(event.currentTarget.innerHTML);
@@ -52,6 +62,8 @@ const TextEditor = () => {
         dangerouslySetInnerHTML={{ __html: htmlContent }}
         onInput={handleContentChange}
       />
+      {loading && <p>Loading...</p>}
+      {error && <p className="text-red-500">{error}</p>}
     </div>
   );
 };

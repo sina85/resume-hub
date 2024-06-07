@@ -1,3 +1,5 @@
+"use client"
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuContent, DropdownMenu } from "@/components/ui/dropdown-menu";
 import { MenuIcon, SearchIcon } from "@/components/ui/icons";
@@ -6,10 +8,12 @@ import PDFViewer from "@/components/PDFViewer";
 import TextEditor from "@/components/TextEditor";
 
 export default function Home() {
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
   return (
     <div className="grid min-h-screen w-full grid-cols-[280px_1fr] overflow-hidden">
       <div className='sidebar'>
-        <FileUpload />
+        <FileUpload setSelectedFile={setSelectedFile} />
       </div>
       <div className="flex flex-col">
         <header className="flex h-[60px] items-center justify-between border-b bg-gray-100/40 px-6 dark:bg-gray-800/40">
@@ -53,8 +57,8 @@ export default function Home() {
           </div>
         </header>
         <main className="flex-1 grid grid-cols-[1fr_1fr] gap-6 p-6">
-          <TextEditor />
-          <PDFViewer />
+          <PDFViewer selectedFile={selectedFile} />
+          <PDFViewer selectedFile={selectedFile} />
         </main>
       </div>
     </div>

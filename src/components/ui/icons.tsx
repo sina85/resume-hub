@@ -274,4 +274,17 @@ const DownloadIcon: React.FC<DownloadIconProps> = (props) => {
   );
 };
 
-export { FileIcon, PlusIcon, UploadIcon, FolderIcon, TrashIcon, MaximizeIcon, XIcon, SearchIcon, MenuIcon, Trash2Icon, ArchiveIcon, DownloadIcon }
+const DotsHorizontalIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
+  </svg>
+);
+
+
+export { FileIcon, PlusIcon, UploadIcon, FolderIcon, TrashIcon, MaximizeIcon, XIcon, SearchIcon, MenuIcon, Trash2Icon, ArchiveIcon, DownloadIcon, DotsHorizontalIcon }
