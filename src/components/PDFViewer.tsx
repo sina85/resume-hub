@@ -13,6 +13,7 @@ const PDFViewer = ({ selectedFile }: { selectedFile: string | null }) => {
       const response = await axios.get(`http://localhost:8000/api/fetch/${filename}`, {
         responseType: 'arraybuffer'
       });
+      console.log('from PDFViewer ', filename);
       const file = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(file);
       setFileUrl(url);

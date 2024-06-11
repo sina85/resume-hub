@@ -1,11 +1,13 @@
-"use client"
+// pages/index.tsx
+"use client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuContent, DropdownMenu } from "@/components/ui/dropdown-menu";
 import { MenuIcon, SearchIcon } from "@/components/ui/icons";
 import FileUpload from "@/components/FileUpload";
 import PDFViewer from "@/components/PDFViewer";
-import TextEditor from "@/components/TextEditor";
+import DocxView from "@/components/DocxView";
+import Link from 'next/link';
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -58,8 +60,16 @@ export default function Home() {
         </header>
         <main className="flex-1 grid grid-cols-[1fr_1fr] gap-6 p-6">
           <PDFViewer selectedFile={selectedFile} />
-          <PDFViewer selectedFile={selectedFile} />
+          <DocxView selectedFile={selectedFile} />
         </main>
+        <footer className="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-800">
+          <Link href="/buy-credits">
+            <Button>Buy Credits</Button>
+          </Link>
+          <Link href="/user-dashboard">
+            <Button>User Dashboard</Button>
+          </Link>
+        </footer>
       </div>
     </div>
   );

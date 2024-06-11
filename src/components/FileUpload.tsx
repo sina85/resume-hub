@@ -17,33 +17,46 @@ interface FileItem {
 const FileUpload = ({ setSelectedFile }: { setSelectedFile: (fileName: string | null) => void }) => {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<Set<number>>(new Set());
-  const [fileType, setFileType] = useState<string>('doctors'); // State for file type
+  const [fileType, setFileType] = useState<string>('doctors');
 
   useEffect(() => {
     const eventSource = new EventSource("http://localhost:8000/api/events");
     eventSource.onmessage = function(event) {
-      const data = JSON.parse(event.data);
-      setFiles(prevFiles => 
-        prevFiles.map(file => 
-          file.name === data.filename ? { ...file, status: data.status } : file
-        )
-      );
+      try {
+        const data = JSON.parse(event.data);
+        console.log("Received event data:", data);  // Log received data
+        setFiles(prevFiles => {
+          const updatedFiles = prevFiles.map(file => {
+            if (file.name === data.filename) {
+              console.log(`Updating status of ${file.name} to ${data.status}`);  // Log file status updates
+              return { ...file, status: data.status };
+            }
+            return file;
+          });
+          console.log("Updated files:", updatedFiles);  // Log the updated files array
+          return updatedFiles;
+        });
+      } catch (error) {
+        console.error("Error parsing SSE data:", error);
+        console.error("Received data:", event.data);
+      }
     };
     return () => {
       eventSource.close();
     };
   }, []);
-
+      
+  
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const filesArray = Array.from(event.target.files || []);
     const newFiles = filesArray.map((file, index) => ({
-      id: Date.now() + index, // Ensure unique ID
+      id: Date.now() + index,
       name: file.name,
       status: 'not processed' as FileStatus,
       showOptions: false,
-      fileType,  // Include fileType
+      fileType,
     }));
-    
+      
     setFiles([...files, ...newFiles]);
     
     if (event.target) {
@@ -81,8 +94,8 @@ const FileUpload = ({ setSelectedFile }: { setSelectedFile: (fileName: string | 
         );
   
         const formData = new FormData();
-        formData.append("file", new File([file.name], file.name)); // Create a new File object from the file name
-        formData.append("file_type", file.fileType);  // Append file type
+        formData.append("file", new File([file.name], file.name));
+        formData.append("file_type", file.fileType);
   
         await axios.post("http://localhost:8000/api/process", formData, {
           headers: {
@@ -96,7 +109,8 @@ const FileUpload = ({ setSelectedFile }: { setSelectedFile: (fileName: string | 
         );
       }
     }
-  };  
+  };
+
   const toggleFileSelection = (id: number) => {
     setSelectedFiles((prevSelectedFiles) => {
       const newSelectedFiles = new Set(prevSelectedFiles);
@@ -134,6 +148,22 @@ const FileUpload = ({ setSelectedFile }: { setSelectedFile: (fileName: string | 
         break;
     }
   };
+  const fetchProcessedFile = async (filename: string) => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/file-status/${filename}`);
+      if (response.data.status === 'processed') {
+        console.log('processed filename from FileUpload:', filename);
+        setSelectedFile(filename);
+      } else {
+        alert("File is not processed yet.");
+      }
+    } catch (error) {
+      console.error("Error fetching processed file:", error);
+    }
+  };  
+  const handleFileClick = (file: FileItem) => {
+    fetchProcessedFile(file.name);
+  };  
 
   return (
     <div className="flex h-screen w-full">
@@ -161,10 +191,10 @@ const FileUpload = ({ setSelectedFile }: { setSelectedFile: (fileName: string | 
         <div className="flex-1 overflow-auto">
           <div className="grid gap-2">
             {files.map(file => (
-              <div key={file.id} className={`flex items-center gap-2 rounded-md px-1 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${file.status === 'not processed' ? 'bg-gray-200' : file.status === 'in progress' ? 'bg-blue-200' : file.status === 'processing' ? 'bg-yellow-200' : file.status === 'processed' ? 'bg-green-200' : 'bg-red-200'}`}>
+              <div key={file.id} className={`flex items-center gap-2 rounded-md px-1 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${file.status === 'not processed' ? 'bg-gray-200' : file.status === 'in progress' ? 'bg-blue-200' : file.status === 'processing' ? 'bg-yellow-200' : file.status === 'processed' ? 'bg-green-200' : 'bg-red-200'}`} onClick={() => handleFileClick(file)}>
                 <input type="checkbox" checked={selectedFiles.has(file.id)} onChange={() => toggleFileSelection(file.id)} />
                 <FileIcon className="w-4 h-5 text-gray-500 dark:text-gray-400" />
-                <span className="text-sm text-gray-700 dark:text-gray-300 flex-1 truncate" onClick={() => setSelectedFile(file.name)}>{file.name}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300 flex-1 truncate">{file.name}</span>
                 <div className="flex items-center gap-2">
                   <Button size="icon" variant="ghost" onClick={() => setFiles(files.map(f => f.id === file.id ? { ...f, showOptions: !f.showOptions } : f))}>
                     <DotsHorizontalIcon className="w-5 h-5" />
